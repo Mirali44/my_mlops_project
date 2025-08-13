@@ -42,21 +42,18 @@ model = trainer.train(X_train, y_train)
 Author: Mirali Abdullayev
 Version: 1.0.0
 """
+
 __author__ = "Mirali Abdullayev"
 __version__ = "1.0.0"
 
 # Package metadata
-__all__ = [
-    "data",
-    "features", 
-    "models",
-    "visualization"
-]
+__all__ = ["data", "features", "models", "visualization"]
+
 
 def main():
     """Main entry point for the package"""
     print("🚀 Multisim ML Pipeline Package")
-    print("="*40)
+    print("=" * 40)
     print(f"Version: {__version__}")
     print(f"Author: {__author__}")
     print("\nAvailable modules:")
@@ -66,6 +63,7 @@ def main():
     print("  📈 models.predict_model - Model prediction")
     print("  📉 visualization.visualize - Visualization tools")
     print("\nFor detailed usage, check individual module documentation.")
+
 
 if __name__ == "__main__":
     main()
