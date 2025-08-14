@@ -4,7 +4,6 @@ import warnings
 from datetime import datetime
 from typing import Optional
 
-import numpy
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
