@@ -1,24 +1,20 @@
-import streamlit as st
-import pandas as pd
-import requests
-import json
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import numpy as np
-from io import StringIO
 import time
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import requests
+import streamlit as st
+
 # Page configuration with stunning theme
 st.set_page_config(
-    page_title="AI Prediction Studio",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="AI Prediction Studio", layout="wide", initial_sidebar_state="expanded"
 )
 
 # Custom CSS for stunning visuals with smaller fonts
-st.markdown("""
+st.markdown(
+    """
 <style>
     /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -464,32 +460,40 @@ st.markdown("""
         font-weight: 600 !important;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Animated header with smaller font
-st.markdown("""
+st.markdown(
+    """
 <div class="title-container floating">
     <h1>🤖 AI Prediction Studio</h1>
     <p>Unleash the power of machine learning with stunning precision ✨</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Initialize session state
-if 'dataset' not in st.session_state:
+if "dataset" not in st.session_state:
     st.session_state.dataset = None
-if 'predictions' not in st.session_state:
+if "predictions" not in st.session_state:
     st.session_state.predictions = None
-if 'model_performance' not in st.session_state:
+if "model_performance" not in st.session_state:
     st.session_state.model_performance = None
 
 # Enhanced sidebar
 with st.sidebar:
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; padding: 1.2rem;">
         <h2 style="color: white; margin-bottom: 1.5rem; font-weight: 800; font-size: 0.8rem;">⚙️ Control Center</h2>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # API endpoint configuration with beautiful styling
     st.markdown("### 🔗 API Configuration")
     api_endpoint = st.text_input(
@@ -497,9 +501,9 @@ with st.sidebar:
         value="http://localhost:8000",
         placeholder="Enter FastAPI Backend URL",
         help="🚀 URL of your FastAPI backend server",
-        key="api_input"
+        key="api_input",
     )
-    
+
     # Test connection button
     if st.button("🔍 Test Connection", key="test_conn", use_container_width=True):
         with st.spinner("Testing connection..."):
@@ -511,86 +515,91 @@ with st.sidebar:
                     st.json(data)
                 else:
                     st.error("❌ Connection failed!")
-            except:
+            except Exception:
                 st.error("❌ Cannot reach backend!")
-    
+
     st.divider()
-    
+
     # Model information with beautiful cards
     st.markdown("### 🧠 Model Intelligence")
-    
+
     # Mock model metrics with stunning visuals
     col1, col2 = st.columns(2)
     with col1:
         st.metric("🎯 Accuracy", "94.2%", "2.1%")
     with col2:
         st.metric("⚡ Speed", "0.02s", "-0.01s")
-    
+
     col3, col4 = st.columns(2)
     with col3:
         st.metric("📊 Samples", "10.2K", "1.2K")
     with col4:
         st.metric("🔥 Confidence", "98.5%", "0.3%")
-    
+
     st.divider()
-    
+
     # Theme selector
     st.markdown("### 🎨 Visualization Theme")
-    chart_theme = st.selectbox("Choose theme:", ["plotly", "plotly_white", "plotly_dark", "presentation"])
+    chart_theme = st.selectbox(
+        "Choose theme:", ["plotly", "plotly_white", "plotly_dark", "presentation"]
+    )
 
 # Create beautiful columns with proper spacing
 col1, col2 = st.columns([1.2, 0.8], gap="large")
 
 # Left column - Dataset Upload
 with col1:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="metric-card">
         <h2 style="text-align: center; margin-bottom: 1rem; color: #1a237e;">
             📁 <span class="gradient-text">Dataset Upload Zone</span>
         </h2>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Beautiful file uploader
     uploaded_file = st.file_uploader(
         "Drop your dataset here or browse files",
-        type=['csv', 'xlsx', 'xls'],
+        type=["csv", "xlsx", "xls"],
         help="📈 Supported formats: CSV, Excel (.xlsx, .xls)",
-        key="file_upload"
+        key="file_upload",
     )
-    
+
     if uploaded_file is not None:
         try:
             # Read file with progress bar
             progress_bar = st.progress(0)
             status_text = st.empty()
-            
+
             for i in range(100):
                 progress_bar.progress(i + 1)
                 if i < 30:
-                    status_text.text(f'📖 Reading file... {i+1}%')
+                    status_text.text(f"📖 Reading file... {i+1}%")
                 elif i < 60:
-                    status_text.text(f'🔍 Analyzing data... {i+1}%')
+                    status_text.text(f"🔍 Analyzing data... {i+1}%")
                 else:
-                    status_text.text(f'✨ Preparing visualization... {i+1}%')
+                    status_text.text(f"✨ Preparing visualization... {i+1}%")
                 time.sleep(0.01)
-            
+
             # Read the dataset based on file type
-            if uploaded_file.name.endswith('.csv'):
+            if uploaded_file.name.endswith(".csv"):
                 dataset = pd.read_csv(uploaded_file)
             else:
                 dataset = pd.read_excel(uploaded_file)
-            
+
             st.session_state.dataset = dataset
-            
+
             status_text.text("✅ Dataset loaded successfully!")
             time.sleep(1)
             progress_bar.empty()
             status_text.empty()
-            
+
             # Beautiful success message with metrics
             st.balloons()
-            st.success(f"🎉 Dataset loaded successfully!")
-            
+            st.success("🎉 Dataset loaded successfully!")
+
             # Dataset metrics in beautiful cards
             metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
             with metric_col1:
@@ -600,43 +609,60 @@ with col1:
             with metric_col3:
                 st.metric("💾 Size", f"{dataset.memory_usage().sum() / 1024:.1f}KB")
             with metric_col4:
-                st.metric("🔢 Numeric Cols", f"{dataset.select_dtypes(include=np.number).shape[1]}")
-            
+                st.metric(
+                    "🔢 Numeric Cols",
+                    f"{dataset.select_dtypes(include=np.number).shape[1]}",
+                )
+
         except Exception as e:
             st.error(f"❌ Error loading dataset: {str(e)}")
-    
+
     st.markdown("</div>", unsafe_allow_html=True)
-    
+
     # Dataset exploration with stunning visualizations
     if st.session_state.dataset is not None:
         dataset = st.session_state.dataset
-        
-        st.markdown("""
+
+        st.markdown(
+            """
         <div class="metric-card">
             <h3 style="text-align: center; margin-bottom: 0.8rem; color: #1a237e;">
                 📊 <span class="gradient-text">Data Explorer</span>
             </h3>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Beautiful tabs
-        tab1, tab2, tab3, tab4 = st.tabs(["📈 Overview", "🔍 Sample Data", "📋 Info", "📊 Visualizations"])
-        
+        tab1, tab2, tab3, tab4 = st.tabs(
+            ["📈 Overview", "🔍 Sample Data", "📋 Info", "📊 Visualizations"]
+        )
+
         with tab1:
             col_a, col_b = st.columns(2)
-            
+
             with col_a:
                 st.markdown("#### 🎯 Dataset Summary")
                 summary_data = {
-                    "Metric": ["Total Rows", "Total Columns", "Memory Usage", "Missing Values"],
+                    "Metric": [
+                        "Total Rows",
+                        "Total Columns",
+                        "Memory Usage",
+                        "Missing Values",
+                    ],
                     "Value": [
                         f"{dataset.shape[0]:,}",
                         f"{dataset.shape[1]:,}",
                         f"{dataset.memory_usage().sum() / 1024:.1f} KB",
-                        f"{dataset.isnull().sum().sum():,}"
-                    ]
+                        f"{dataset.isnull().sum().sum():,}",
+                    ],
                 }
-                st.dataframe(pd.DataFrame(summary_data), hide_index=True, use_container_width=True)
-            
+                st.dataframe(
+                    pd.DataFrame(summary_data),
+                    hide_index=True,
+                    use_container_width=True,
+                )
+
             with col_b:
                 st.markdown("#### 🏷️ Column Types")
                 dtype_counts = dataset.dtypes.value_counts()
@@ -647,11 +673,17 @@ with col1:
                     names=dtype_names,
                     title="Data Types Distribution",
                     template=chart_theme,
-                    color_discrete_sequence=['#1a237e', '#283593', '#3f51b5', '#5c6bc0', '#7986cb']
+                    color_discrete_sequence=[
+                        "#1a237e",
+                        "#283593",
+                        "#3f51b5",
+                        "#5c6bc0",
+                        "#7986cb",
+                    ],
                 )
                 fig.update_layout(height=250, showlegend=True, title_font_size=12)
                 st.plotly_chart(fig, use_container_width=True)
-            
+
             # Statistical summary with beautiful styling
             if st.checkbox("📊 Show Statistical Summary", key="stats_summary"):
                 st.markdown("#### 📈 Statistical Analysis")
@@ -660,40 +692,52 @@ with col1:
                     st.dataframe(numeric_data.describe(), use_container_width=True)
                 else:
                     st.info("ℹ️ No numeric columns found for statistical analysis.")
-        
+
         with tab2:
             st.markdown("#### 👀 Data Preview")
             # Interactive data viewer
-            n_rows = st.slider("Number of rows to display:", 5, min(50, len(dataset)), 10)
+            n_rows = st.slider(
+                "Number of rows to display:", 5, min(50, len(dataset)), 10
+            )
             st.dataframe(dataset.head(n_rows), use_container_width=True, height=350)
-        
+
         with tab3:
             col_info1, col_info2 = st.columns(2)
-            
+
             with col_info1:
                 st.markdown("#### 🏗️ Data Types")
-                dtype_df = pd.DataFrame({
-                    'Column': dataset.dtypes.index,
-                    'Data Type': [str(dtype) for dtype in dataset.dtypes.values]  # Convert to string
-                })
+                dtype_df = pd.DataFrame(
+                    {
+                        "Column": dataset.dtypes.index,
+                        "Data Type": [
+                            str(dtype) for dtype in dataset.dtypes.values
+                        ],  # Convert to string
+                    }
+                )
                 st.dataframe(dtype_df, hide_index=True, use_container_width=True)
-            
+
             with col_info2:
                 st.markdown("#### ❓ Missing Values")
-                missing_df = pd.DataFrame({
-                    'Column': dataset.columns,
-                    'Missing Count': dataset.isnull().sum().values,
-                    'Missing %': (dataset.isnull().sum() * 100 / len(dataset)).round(2).values
-                })
-                missing_data = missing_df[missing_df['Missing Count'] > 0]
+                missing_df = pd.DataFrame(
+                    {
+                        "Column": dataset.columns,
+                        "Missing Count": dataset.isnull().sum().values,
+                        "Missing %": (dataset.isnull().sum() * 100 / len(dataset))
+                        .round(2)
+                        .values,
+                    }
+                )
+                missing_data = missing_df[missing_df["Missing Count"] > 0]
                 if len(missing_data) > 0:
-                    st.dataframe(missing_data, hide_index=True, use_container_width=True)
+                    st.dataframe(
+                        missing_data, hide_index=True, use_container_width=True
+                    )
                 else:
                     st.success("✅ No missing values found!")
-        
+
         with tab4:
             st.markdown("#### 📊 Data Visualizations")
-            
+
             numeric_cols = dataset.select_dtypes(include=np.number).columns
             if len(numeric_cols) > 0:
                 # Correlation heatmap
@@ -701,91 +745,109 @@ with col1:
                     fig = px.imshow(
                         dataset[numeric_cols].corr(),
                         template=chart_theme,
-                        color_continuous_scale=[[0, '#1a237e'], [0.5, '#ffffff'], [1, '#ff9800']],
+                        color_continuous_scale=[
+                            [0, "#1a237e"],
+                            [0.5, "#ffffff"],
+                            [1, "#ff9800"],
+                        ],
                         aspect="auto",
-                        title="🔥 Correlation Heatmap"
+                        title="🔥 Correlation Heatmap",
                     )
                     fig.update_layout(height=300, title_font_size=12)
                     st.plotly_chart(fig, use_container_width=True)
-                
+
                 # Distribution plots
                 if st.checkbox("Show Distribution Plots", key="dist_plots"):
-                    selected_col = st.selectbox("Select column for distribution:", numeric_cols)
+                    selected_col = st.selectbox(
+                        "Select column for distribution:", numeric_cols
+                    )
                     if selected_col:
                         fig = px.histogram(
-                            dataset, 
+                            dataset,
                             x=selected_col,
                             template=chart_theme,
                             title=f"📈 Distribution of {selected_col}",
-                            color_discrete_sequence=['#1a237e']
+                            color_discrete_sequence=["#1a237e"],
                         )
                         fig.update_layout(height=300, title_font_size=12)
                         st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("ℹ️ No numeric columns found for visualization.")
-        
+
         st.markdown("</div>", unsafe_allow_html=True)
 
 # Right column - Predictions
 with col2:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="metric-card pulse">
         <h2 style="text-align: center; margin-bottom: 1rem; color: #1a237e;">
             🚀 <span class="gradient-text">Prediction Engine</span>
         </h2>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     if st.session_state.dataset is not None:
         dataset = st.session_state.dataset
-        
+
         # Dataset info with beautiful metrics
-        st.info(f"🎯 Dataset ready: **{dataset.shape[0]:,}** rows, **{dataset.shape[1]}** columns")
-        
+        st.info(
+            f"🎯 Dataset ready: **{dataset.shape[0]:,}** rows, **{dataset.shape[1]}** columns"
+        )
+
         st.markdown("#### ⚙️ Prediction Settings")
-        
+
         # Advanced prediction settings
         prediction_mode = st.radio(
             "🎯 Prediction Mode",
             ["🚀 Full Dataset", "🎲 Random Sample", "📑 Custom Range"],
-            help="Choose your prediction strategy"
+            help="Choose your prediction strategy",
         )
-        
+
         sample_size = len(dataset)
         start_idx, end_idx = 0, len(dataset)
-        
+
         if prediction_mode == "🎲 Random Sample":
             sample_size = st.slider(
                 "Sample Size",
                 min_value=1,
                 max_value=len(dataset),
                 value=min(100, len(dataset)),
-                help="Number of random rows to predict"
+                help="Number of random rows to predict",
             )
         elif prediction_mode == "📑 Custom Range":
             col_start, col_end = st.columns(2)
             with col_start:
-                start_idx = st.number_input("Start index", 0, len(dataset)-1, 0)
+                start_idx = st.number_input("Start index", 0, len(dataset) - 1, 0)
             with col_end:
-                end_idx = st.number_input("End index", start_idx+1, len(dataset), min(start_idx+100, len(dataset)))
+                end_idx = st.number_input(
+                    "End index",
+                    start_idx + 1,
+                    len(dataset),
+                    min(start_idx + 100, len(dataset)),
+                )
             sample_size = end_idx - start_idx
-        
+
         # Advanced options
         with st.expander("🔧 Advanced Options"):
-            batch_processing = st.checkbox("Enable batch processing", help="Process data in smaller batches")
+            batch_processing = st.checkbox(
+                "Enable batch processing", help="Process data in smaller batches"
+            )
             if batch_processing:
                 batch_size = st.slider("Batch size", 10, 1000, 100)
-            
+
             confidence_threshold = st.slider("Confidence threshold", 0.0, 1.0, 0.5)
             include_metadata = st.checkbox("Include prediction metadata", True)
-        
+
         # Stunning prediction button
         prediction_button = st.button(
             "🚀 Launch Predictions",
             type="primary",
             use_container_width=True,
-            key="predict_btn"
+            key="predict_btn",
         )
-        
+
         if prediction_button:
             try:
                 # Prepare data based on mode
@@ -795,166 +857,188 @@ with col2:
                     data_for_prediction = dataset.iloc[start_idx:end_idx]
                 else:
                     data_for_prediction = dataset
-                
+
                 # Beautiful progress animation
                 progress_container = st.container()
-                
+
                 with progress_container:
                     progress_bar = st.progress(0)
                     status_text = st.empty()
-                    
+
                     # Animated progress
                     stages = [
                         "🔄 Initializing prediction engine...",
                         "📊 Processing data...",
                         "🧠 Running ML model...",
                         "📈 Calculating confidence scores...",
-                        "✨ Finalizing predictions..."
+                        "✨ Finalizing predictions...",
                     ]
-                    
+
                     for i, stage in enumerate(stages):
                         for j in range(20):
-                            progress = (i * 20 + j + 1)
+                            progress = i * 20 + j + 1
                             progress_bar.progress(progress)
                             status_text.text(f"{stage} {progress}%")
                             time.sleep(0.05)
-                
+
                 # Convert data to file format for API
-                csv_data = data_for_prediction.to_csv(index=False).encode('utf-8')
-                
+                csv_data = data_for_prediction.to_csv(index=False).encode("utf-8")
+
                 # Make API call with file upload
                 with st.spinner("🚀 Communicating with AI backend..."):
-                    files = {'file': ('data.csv', csv_data, 'text/csv')}
+                    files = {"file": ("data.csv", csv_data, "text/csv")}
                     response = requests.post(
-                        f"{api_endpoint}/predict",
-                        files=files,
-                        timeout=60
+                        f"{api_endpoint}/predict", files=files, timeout=60
                     )
-                    
+
                     if response.status_code == 200:
                         predictions_data = response.json()
-                        
+
                         # Process predictions
-                        if 'data' in predictions_data and 'predictions' in predictions_data['data']:
-                            predictions = predictions_data['data']['predictions']
-                            processing_time = predictions_data['data'].get('processing_time_seconds', 0)
-                            
+                        if (
+                            "data" in predictions_data
+                            and "predictions" in predictions_data["data"]
+                        ):
+                            predictions = predictions_data["data"]["predictions"]
+                            processing_time = predictions_data["data"].get(
+                                "processing_time_seconds", 0
+                            )
+
                             # Create beautiful results
                             st.balloons()
-                            st.success(f"🎉 Predictions completed in {processing_time}s!")
-                            
+                            st.success(
+                                f"🎉 Predictions completed in {processing_time}s!"
+                            )
+
                             # Store predictions
                             st.session_state.predictions = pd.DataFrame(predictions)
-                            
+
                             # Show metrics
                             pred_col1, pred_col2, pred_col3 = st.columns(3)
                             with pred_col1:
-                                st.metric("⚡ Processing Time", f"{processing_time:.2f}s")
+                                st.metric(
+                                    "⚡ Processing Time", f"{processing_time:.2f}s"
+                                )
                             with pred_col2:
                                 st.metric("📊 Predictions", len(predictions))
                             with pred_col3:
-                                avg_conf = np.mean([p.get('confidence', 0.5) for p in predictions])
+                                avg_conf = np.mean(
+                                    [p.get("confidence", 0.5) for p in predictions]
+                                )
                                 st.metric("🎯 Avg Confidence", f"{avg_conf:.1%}")
-                        
+
                         else:
                             st.error("❌ Unexpected response format from API")
                     else:
-                        st.error(f"❌ API Error: {response.status_code} - {response.text}")
-                        
+                        st.error(
+                            f"❌ API Error: {response.status_code} - {response.text}"
+                        )
+
             except requests.exceptions.ConnectionError:
-                st.error("🔌 Cannot connect to AI backend. Ensure the server is running!")
+                st.error(
+                    "🔌 Cannot connect to AI backend. Ensure the server is running!"
+                )
             except requests.exceptions.Timeout:
-                st.error("⏱️ Request timed out. The model might be processing large data.")
+                st.error(
+                    "⏱️ Request timed out. The model might be processing large data."
+                )
             except Exception as e:
                 st.error(f"❌ Unexpected error: {str(e)}")
             finally:
                 # Clean up progress indicators
                 progress_container.empty()
-    
+
     else:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 2rem; opacity: 0.8;">
             <h3 style="color: #1a237e; font-size: 1.1rem;">📥 Upload Dataset First</h3>
             <p style="color: #1a237e; font-weight: 500; font-size: 0.85rem;">Upload your dataset in the left panel to start making predictions</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Prediction Results Section
 if st.session_state.predictions is not None:
     st.markdown("---")
-    st.markdown("""
+    st.markdown(
+        """
     <div class="metric-card">
         <h2 style="text-align: center; margin-bottom: 1.5rem; color: #1a237e;">
             📈 <span class="gradient-text">Prediction Results Dashboard</span>
         </h2>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     predictions_df = st.session_state.predictions
-    
+
     # Results tabs
-    result_tab1, result_tab2, result_tab3, result_tab4 = st.tabs([
-        "📊 Results Table", 
-        "📈 Visualizations", 
-        "📉 Analytics", 
-        "💾 Export"
-    ])
-    
+    result_tab1, result_tab2, result_tab3, result_tab4 = st.tabs(
+        ["📊 Results Table", "📈 Visualizations", "📉 Analytics", "💾 Export"]
+    )
+
     with result_tab1:
         st.markdown("#### 🎯 Prediction Results")
         st.dataframe(predictions_df, use_container_width=True, height=350)
-    
+
     with result_tab2:
-        if 'prediction' in predictions_df.columns:
+        if "prediction" in predictions_df.columns:
             col_viz1, col_viz2 = st.columns(2)
-            
+
             with col_viz1:
                 # Prediction distribution
                 fig = px.histogram(
-                    predictions_df, 
-                    x='prediction',
+                    predictions_df,
+                    x="prediction",
                     template=chart_theme,
                     title="🎯 Prediction Distribution",
-                    color_discrete_sequence=['#1a237e']
+                    color_discrete_sequence=["#1a237e"],
                 )
                 fig.update_layout(height=280, title_font_size=11)
                 st.plotly_chart(fig, use_container_width=True)
-            
+
             with col_viz2:
-                if 'confidence' in predictions_df.columns:
+                if "confidence" in predictions_df.columns:
                     # Confidence distribution
                     fig = px.histogram(
-                        predictions_df, 
-                        x='confidence',
+                        predictions_df,
+                        x="confidence",
                         template=chart_theme,
                         title="📊 Confidence Distribution",
-                        color_discrete_sequence=['#3f51b5']
+                        color_discrete_sequence=["#3f51b5"],
                     )
                     fig.update_layout(height=280, title_font_size=11)
                     st.plotly_chart(fig, use_container_width=True)
-            
+
             # Scatter plot if both prediction and confidence exist
-            if 'confidence' in predictions_df.columns:
+            if "confidence" in predictions_df.columns:
                 fig = px.scatter(
-                    predictions_df, 
-                    x='prediction', 
-                    y='confidence',
+                    predictions_df,
+                    x="prediction",
+                    y="confidence",
                     template=chart_theme,
                     title="🎯 Prediction vs Confidence",
-                    color='confidence',
-                    size='confidence',
-                    color_continuous_scale=[[0, '#1a237e'], [0.5, '#3f51b5'], [1, '#ff9800']]
+                    color="confidence",
+                    size="confidence",
+                    color_continuous_scale=[
+                        [0, "#1a237e"],
+                        [0.5, "#3f51b5"],
+                        [1, "#ff9800"],
+                    ],
                 )
                 fig.update_layout(height=320, title_font_size=11)
                 st.plotly_chart(fig, use_container_width=True)
-    
+
     with result_tab3:
         st.markdown("#### 📈 Prediction Analytics")
-        
-        if 'prediction' in predictions_df.columns:
-            pred_stats = predictions_df['prediction'].describe()
-            
+
+        if "prediction" in predictions_df.columns:
+            pred_stats = predictions_df["prediction"].describe()
+
             metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
             with metric_col1:
                 st.metric("📊 Mean", f"{pred_stats['mean']:.3f}")
@@ -964,21 +1048,21 @@ if st.session_state.predictions is not None:
                 st.metric("📉 Min", f"{pred_stats['min']:.3f}")
             with metric_col4:
                 st.metric("📈 Max", f"{pred_stats['max']:.3f}")
-            
+
             # Detailed statistics
             st.markdown("#### 📊 Detailed Statistics")
             st.dataframe(pred_stats.to_frame().T, use_container_width=True)
-            
-        if 'confidence' in predictions_df.columns:
-            conf_stats = predictions_df['confidence'].describe()
+
+        if "confidence" in predictions_df.columns:
+            conf_stats = predictions_df["confidence"].describe()
             st.markdown("#### 🎯 Confidence Statistics")
             st.dataframe(conf_stats.to_frame().T, use_container_width=True)
-    
+
     with result_tab4:
         st.markdown("#### 💾 Export Options")
-        
+
         col_export1, col_export2 = st.columns(2)
-        
+
         with col_export1:
             # CSV Export
             csv_data = predictions_df.to_csv(index=False)
@@ -987,31 +1071,59 @@ if st.session_state.predictions is not None:
                 data=csv_data,
                 file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
-                use_container_width=True
+                use_container_width=True,
             )
-        
+
         with col_export2:
             # JSON Export
-            json_data = predictions_df.to_json(orient='records', indent=2)
+            json_data = predictions_df.to_json(orient="records", indent=2)
             st.download_button(
                 label="📋 Download as JSON",
                 data=json_data,
                 file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
                 mime="application/json",
-                use_container_width=True
+                use_container_width=True,
             )
-        
+
         # Summary report
-        avg_pred = f"{predictions_df['prediction'].mean():.4f}" if 'prediction' in predictions_df.columns else 'N/A'
-        std_pred = f"{predictions_df['prediction'].std():.4f}" if 'prediction' in predictions_df.columns else 'N/A'
-        min_pred = f"{predictions_df['prediction'].min():.4f}" if 'prediction' in predictions_df.columns else 'N/A'
-        max_pred = f"{predictions_df['prediction'].max():.4f}" if 'prediction' in predictions_df.columns else 'N/A'
-        
-        avg_conf = f"{predictions_df['confidence'].mean():.4f}" if 'confidence' in predictions_df.columns else 'N/A'
-        high_conf = len(predictions_df[predictions_df['confidence'] > 0.8]) if 'confidence' in predictions_df.columns else 'N/A'
-        
+        avg_pred = (
+            f"{predictions_df['prediction'].mean():.4f}"
+            if "prediction" in predictions_df.columns
+            else "N/A"
+        )
+        std_pred = (
+            f"{predictions_df['prediction'].std():.4f}"
+            if "prediction" in predictions_df.columns
+            else "N/A"
+        )
+        min_pred = (
+            f"{predictions_df['prediction'].min():.4f}"
+            if "prediction" in predictions_df.columns
+            else "N/A"
+        )
+        max_pred = (
+            f"{predictions_df['prediction'].max():.4f}"
+            if "prediction" in predictions_df.columns
+            else "N/A"
+        )
+
+        avg_conf = (
+            f"{predictions_df['confidence'].mean():.4f}"
+            if "confidence" in predictions_df.columns
+            else "N/A"
+        )
+        high_conf = (
+            len(predictions_df[predictions_df["confidence"] > 0.8])
+            if "confidence" in predictions_df.columns
+            else "N/A"
+        )
+
         st.markdown("#### 📑 Generate Report")
-        if st.button("📊 Generate Summary Report", use_container_width=True, key="generate_report"):
+        if st.button(
+            "📊 Generate Summary Report",
+            use_container_width=True,
+            key="generate_report",
+        ):
             report = f"""
         
 # 🤖 AI Prediction Report
@@ -1039,23 +1151,24 @@ if st.session_state.predictions is not None:
 ---
 Generated by AI Prediction Studio 🚀
             """
-            
+
             st.download_button(
                 label="📄 Download Report",
                 data=report,
                 file_name=f"prediction_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
                 use_container_width=True,
-                key="download_report"
+                key="download_report",
             )
-            
+
             st.markdown(report)
-    
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Beautiful footer with smaller text
 st.markdown("---")
-st.markdown("""
+st.markdown(
+    """
 <div style="text-align: center; padding: 2.5rem; background: linear-gradient(135deg, rgba(26, 35, 126, 0.95) 0%, rgba(63, 81, 181, 0.9) 100%); border-radius: 15px; margin: 1.5rem 0; border: 2px solid rgba(255, 255, 255, 0.2);">
     <h3 style="color: white; margin-bottom: 1.5rem; font-weight: 800; font-size: 1.4rem;">🚀 How to Use AI Prediction Studio</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin: 1.5rem 0;">
@@ -1094,10 +1207,13 @@ st.markdown("""
         <p style="margin: 0.4rem 0; font-weight: 500;">Made with ❤️ for the future of machine learning</p>
     </div>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Enhanced floating particles animation with smaller particles
-st.markdown("""
+st.markdown(
+    """
 <div class="particles">
     <div class="particle"></div>
     <div class="particle"></div>
@@ -1261,4 +1377,6 @@ st.markdown("""
         width: 100% !important;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)

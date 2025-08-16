@@ -1,11 +1,12 @@
-import pandas as pd
-import numpy as np
-import joblib
-import warnings
-import os
 import json
+import os
+import warnings
 from datetime import datetime
-from typing import Union, Dict, Optional
+from typing import Dict, Optional, Union
+
+import joblib
+import numpy as np
+import pandas as pd
 
 warnings.filterwarnings("ignore")
 
@@ -80,11 +81,19 @@ class MultisimPredictor:
             print(f"   Pipeline Steps: {list(self.model.named_steps.keys())}")
 
         if self.model_metadata:
-            print(f"   Training Date: {self.model_metadata.get('training_date', 'Unknown')}")
-            print(f"   Best AUC Score: {self.model_metadata.get('best_auc', 'Unknown')}")
-            print(f"   Feature Count: {self.model_metadata.get('feature_count', 'Unknown')}")
+            print(
+                f"   Training Date: {self.model_metadata.get('training_date', 'Unknown')}"
+            )
+            print(
+                f"   Best AUC Score: {self.model_metadata.get('best_auc', 'Unknown')}"
+            )
+            print(
+                f"   Feature Count: {self.model_metadata.get('feature_count', 'Unknown')}"
+            )
 
-    def preprocess_input_data(self, data: Union[pd.DataFrame, dict, list]) -> pd.DataFrame:
+    def preprocess_input_data(
+        self, data: Union[pd.DataFrame, dict, list]
+    ) -> pd.DataFrame:
         """
         Preprocess input data to match training format.
 
@@ -110,11 +119,19 @@ class MultisimPredictor:
         print(f"   Input shape: {df.shape}")
 
         # Convert specified columns to int type (same as training)
-        int_columns = ["age_dev", "dev_num", "is_dualsim", "is_featurephone", "is_smartphone"]
+        int_columns = [
+            "age_dev",
+            "dev_num",
+            "is_dualsim",
+            "is_featurephone",
+            "is_smartphone",
+        ]
         for col in int_columns:
             if col in df.columns:
                 try:
-                    df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
+                    df[col] = (
+                        pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
+                    )
                 except Exception as e:
                     print(e)
 
@@ -131,7 +148,9 @@ class MultisimPredictor:
             try:
                 age_filled = df["age"].fillna("unknown")
                 gndr_filled = df["gndr"].fillna("U")
-                df["age_gender_combined"] = age_filled.astype(str) + "_" + gndr_filled.astype(str)
+                df["age_gender_combined"] = (
+                    age_filled.astype(str) + "_" + gndr_filled.astype(str)
+                )
             except Exception as e:
                 print(e)
 
@@ -143,7 +162,9 @@ class MultisimPredictor:
         cols_to_drop.extend(val_cols)
 
         # Drop temp/tmp/test columns
-        temp_cols = [col for col in df.columns if col.startswith(("temp_", "tmp_", "test_"))]
+        temp_cols = [
+            col for col in df.columns if col.startswith(("temp_", "tmp_", "test_"))
+        ]
         cols_to_drop.extend(temp_cols)
 
         # Drop telephone_number if exists
@@ -319,7 +340,9 @@ class MultisimPredictor:
             # Prepare output DataFrame
             output_df = data.copy()
             output_df["multisim_prediction"] = detailed_results["predictions"]
-            output_df["multisim_probability"] = detailed_results["multisim_probabilities"]
+            output_df["multisim_probability"] = detailed_results[
+                "multisim_probabilities"
+            ]
             output_df["prediction_confidence"] = detailed_results["confidence_scores"]
 
             # Save results
@@ -341,7 +364,9 @@ class MultisimPredictor:
             print(f"❌ Error during batch prediction: {str(e)}")
             return False
 
-    def save_predictions_report(self, predictions_data: Dict, report_path: str = None) -> bool:
+    def save_predictions_report(
+        self, predictions_data: Dict, report_path: str = None
+    ) -> bool:
         """
         Save a detailed prediction report.
 
@@ -411,7 +436,9 @@ def main():
 
     # Try to load model
     if not predictor.load_model():
-        print("\n⚠️ No trained model found. Please train a model first using train_model.py")
+        print(
+            "\n⚠️ No trained model found. Please train a model first using train_model.py"
+        )
         print("   Using sample model path: 'best_multisim_model.pkl'")
         return
 

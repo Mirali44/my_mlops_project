@@ -20,28 +20,35 @@ calculate_metrics: Calculate comprehensive classification metrics
 optimize_hyperparameters: Hyperparameter optimization with Optuna
 """
 
-import pandas as pd
-import numpy as np
-import xgboost as xgb
-import optuna
-import joblib
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, Tuple
-import warnings
 import logging
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.pipeline import Pipeline
+import os
 
 # Import custom modules
 import sys
-import os
+import warnings
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import joblib
+import numpy as np
+import optuna
+import pandas as pd
+import xgboost as xgb
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.pipeline import Pipeline
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from features.build_features import FeatureBuilder, create_preprocessing_pipeline
     from data.make_dataset import DatasetProcessor
+    from features.build_features import FeatureBuilder, create_preprocessing_pipeline
 except ImportError:
     logger = logging.getLogger(__name__)
     logger.warning("⚠️ Could not import custom modules. Using standalone mode.")
@@ -113,7 +120,11 @@ class ModelEvaluator:
 
     @staticmethod
     def evaluate_model_performance(
-        model, X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series
+        model,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        X_test: pd.DataFrame,
+        y_test: pd.Series,
     ) -> Dict[str, Dict[str, float]]:
         """
         Comprehensive model evaluation on both training and test sets.
@@ -135,18 +146,26 @@ class ModelEvaluator:
         # Training predictions
         y_train_pred = model.predict(X_train)
         y_train_pred_proba = (
-            model.predict_proba(X_train)[:, 1] if hasattr(model, "predict_proba") else None
+            model.predict_proba(X_train)[:, 1]
+            if hasattr(model, "predict_proba")
+            else None
         )
 
         # Test predictions
         y_test_pred = model.predict(X_test)
         y_test_pred_proba = (
-            model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
+            model.predict_proba(X_test)[:, 1]
+            if hasattr(model, "predict_proba")
+            else None
         )
 
         # Calculate metrics
-        train_metrics = ModelEvaluator.calculate_metrics(y_train, y_train_pred, y_train_pred_proba)
-        test_metrics = ModelEvaluator.calculate_metrics(y_test, y_test_pred, y_test_pred_proba)
+        train_metrics = ModelEvaluator.calculate_metrics(
+            y_train, y_train_pred, y_train_pred_proba
+        )
+        test_metrics = ModelEvaluator.calculate_metrics(
+            y_test, y_test_pred, y_test_pred_proba
+        )
 
         return {"train": train_metrics, "test": test_metrics}
 
@@ -192,7 +211,9 @@ class ModelSerializer:
 
             logger.info(f"✅ Model saved successfully to: {filepath}")
             logger.info(f"   Model type: {type(model).__name__}")
-            logger.info(f"   File size: {Path(filepath).stat().st_size / 1024**2:.2f} MB")
+            logger.info(
+                f"   File size: {Path(filepath).stat().st_size / 1024**2:.2f} MB"
+            )
 
             return True
 
@@ -302,7 +323,11 @@ class ModelTrainer:
         return pipeline
 
     def train_baseline(
-        self, X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series
+        self,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        X_test: pd.DataFrame,
+        y_test: pd.Series,
     ) -> Dict[str, Dict[str, float]]:
         """
         Train baseline XGBoost model and evaluate performance.
@@ -336,7 +361,11 @@ class ModelTrainer:
 
         # Store in training history
         self.training_history.append(
-            {"model_type": "baseline", "timestamp": datetime.now().isoformat(), "metrics": metrics}
+            {
+                "model_type": "baseline",
+                "timestamp": datetime.now().isoformat(),
+                "metrics": metrics,
+            }
         )
 
         return metrics
@@ -366,7 +395,9 @@ class ModelTrainer:
         Tuple[Dict[str, Dict[str, float]], Dict[str, Any]]
             Best model metrics and best parameters
         """
-        logger.info(f"🔬 Starting hyperparameter optimization with Optuna ({n_trials} trials)...")
+        logger.info(
+            f"🔬 Starting hyperparameter optimization with Optuna ({n_trials} trials)..."
+        )
 
         def objective(trial):
             """Optuna objective function for hyperparameter optimization."""
@@ -379,7 +410,9 @@ class ModelTrainer:
                 "model__max_depth": trial.suggest_int("max_depth", 4, 12),
                 "model__learning_rate": trial.suggest_float("learning_rate", 0.01, 0.2),
                 "model__subsample": trial.suggest_float("subsample", 0.7, 1.0),
-                "model__colsample_bytree": trial.suggest_float("colsample_bytree", 0.7, 1.0),
+                "model__colsample_bytree": trial.suggest_float(
+                    "colsample_bytree", 0.7, 1.0
+                ),
                 "model__reg_alpha": trial.suggest_float("reg_alpha", 0, 2),
                 "model__reg_lambda": trial.suggest_float("reg_lambda", 0, 2),
                 "model__min_child_weight": trial.suggest_int("min_child_weight", 1, 7),
@@ -407,7 +440,9 @@ class ModelTrainer:
         # Add callback for progress tracking
         def callback(study, trial):
             if trial.number % 10 == 0:
-                logger.info(f"   Trial {trial.number}: Best AUC = {study.best_value:.4f}")
+                logger.info(
+                    f"   Trial {trial.number}: Best AUC = {study.best_value:.4f}"
+                )
 
         study.optimize(objective, n_trials=n_trials, callbacks=[callback])
 
@@ -482,7 +517,9 @@ class ModelTrainer:
 
         # Step 1: Feature engineering
         self.feature_builder = FeatureBuilder(random_state=self.random_state)
-        X_train, X_test, y_train, y_test = self.feature_builder.build_features(data, test_size)
+        X_train, X_test, y_train, y_test = self.feature_builder.build_features(
+            data, test_size
+        )
 
         # Step 2: Train baseline model
         logger.info("\n📊 Phase 1: Baseline Model Training")
@@ -537,18 +574,24 @@ class ModelTrainer:
         logger.info(f"     Test AUC:  {best_metrics['test']['auc_roc']:.4f}")
 
         # Calculate improvement
-        improvement = best_metrics["test"]["auc_roc"] - baseline_metrics["test"]["auc_roc"]
+        improvement = (
+            best_metrics["test"]["auc_roc"] - baseline_metrics["test"]["auc_roc"]
+        )
         logger.info("   IMPROVEMENT:")
         logger.info(f"     Test AUC Improvement: {improvement:.4f}")
 
         # Check for overfitting
-        train_test_diff = best_metrics["train"]["auc_roc"] - best_metrics["test"]["auc_roc"]
+        train_test_diff = (
+            best_metrics["train"]["auc_roc"] - best_metrics["test"]["auc_roc"]
+        )
         if train_test_diff > 0.1:
             logger.warning(
                 f"   ⚠️ Potential overfitting detected (Train-Test AUC diff: {train_test_diff:.4f})"
             )
         else:
-            logger.info(f"   ✅ Good generalization (Train-Test AUC diff: {train_test_diff:.4f})")
+            logger.info(
+                f"   ✅ Good generalization (Train-Test AUC diff: {train_test_diff:.4f})"
+            )
 
     def save_trained_models(self, base_path: str = "models/") -> Dict[str, bool]:
         """
@@ -579,7 +622,9 @@ class ModelTrainer:
         if self.baseline_model is not None:
             baseline_path = f"{base_path}baseline_model_{timestamp}.pkl"
             results["baseline"] = ModelSerializer.save_model(
-                self.baseline_model, baseline_path, {**metadata, "model_type": "baseline"}
+                self.baseline_model,
+                baseline_path,
+                {**metadata, "model_type": "baseline"},
             )
 
         # Save best model
@@ -599,7 +644,9 @@ class ModelTrainer:
         if self.feature_builder is not None:
             feature_path = f"{base_path}feature_builder_{timestamp}.pkl"
             results["feature_builder"] = ModelSerializer.save_model(
-                self.feature_builder, feature_path, {**metadata, "model_type": "feature_builder"}
+                self.feature_builder,
+                feature_path,
+                {**metadata, "model_type": "feature_builder"},
             )
 
         return results
@@ -663,7 +710,9 @@ def train_model_from_file(
     return results
 
 
-def load_trained_model(model_path: str = "models/latest_model.pkl") -> Tuple[Any, Dict[str, Any]]:
+def load_trained_model(
+    model_path: str = "models/latest_model.pkl",
+) -> Tuple[Any, Dict[str, Any]]:
     """
     Load a previously trained model.
 

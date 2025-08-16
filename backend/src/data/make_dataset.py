@@ -15,11 +15,12 @@ load_parquet_data: Load parquet files with error handling
 validate_data: Validate dataset structure and content
 """
 
-import pandas as pd
+import logging
 import warnings
 from pathlib import Path
-from typing import Optional, Dict, Any
-import logging
+from typing import Any, Dict, Optional
+
+import pandas as pd
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -162,14 +163,22 @@ class DatasetProcessor:
             self.processing_log.append("Dropped telephone_number column")
 
         # Convert specified columns to int type with better error handling
-        int_columns = ["age_dev", "dev_num", "is_dualsim", "is_featurephone", "is_smartphone"]
+        int_columns = [
+            "age_dev",
+            "dev_num",
+            "is_dualsim",
+            "is_featurephone",
+            "is_smartphone",
+        ]
         for col in int_columns:
             if col in processed_data.columns:
                 try:
                     # First convert to numeric, then to int
                     original_type = processed_data[col].dtype
                     processed_data[col] = (
-                        pd.to_numeric(processed_data[col], errors="coerce").fillna(0).astype(int)
+                        pd.to_numeric(processed_data[col], errors="coerce")
+                        .fillna(0)
+                        .astype(int)
                     )
                     logger.info(f"✅ Converted {col} from {original_type} to int")
                     self.processing_log.append(f"Converted {col} to int")
@@ -188,7 +197,9 @@ class DatasetProcessor:
                 # Check for any NaN values introduced
                 nan_count = processed_data["target"].isna().sum()
                 if nan_count > 0:
-                    logger.warning(f"⚠️ {nan_count} NaN values introduced in target conversion")
+                    logger.warning(
+                        f"⚠️ {nan_count} NaN values introduced in target conversion"
+                    )
 
                 self.processing_log.append("Converted target to float")
 
@@ -200,7 +211,9 @@ class DatasetProcessor:
             try:
                 original_type = processed_data["age"].dtype
                 if processed_data["age"].dtype == "object":
-                    processed_data["age"] = pd.to_numeric(processed_data["age"], errors="coerce")
+                    processed_data["age"] = pd.to_numeric(
+                        processed_data["age"], errors="coerce"
+                    )
                     logger.info(f"✅ Age converted from {original_type} to numeric")
                     self.processing_log.append("Converted age to numeric")
             except Exception as e:
@@ -234,7 +247,9 @@ class DatasetProcessor:
 
         # Drop all columns starting with other patterns
         cols_to_drop = [
-            col for col in processed_data.columns if col.startswith(("temp_", "tmp_", "test_"))
+            col
+            for col in processed_data.columns
+            if col.startswith(("temp_", "tmp_", "test_"))
         ]
         if cols_to_drop:
             processed_data = processed_data.drop(cols_to_drop, axis=1)
@@ -244,7 +259,9 @@ class DatasetProcessor:
         # Update the stored data
         self.data = processed_data
 
-        logger.info(f"✅ Initial preprocessing completed. New shape: {processed_data.shape}")
+        logger.info(
+            f"✅ Initial preprocessing completed. New shape: {processed_data.shape}"
+        )
         logger.info(f"   Shape change: {self.original_shape} → {processed_data.shape}")
 
         # Display final data types

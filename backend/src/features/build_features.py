@@ -69,7 +69,9 @@ class SmartImputer(BaseEstimator, TransformerMixin):
         """Fit the imputer on training data."""
         # Identify columns to drop (>threshold% missing)
         missing_ratios = X.isnull().sum() / len(X)
-        self.columns_to_drop = missing_ratios[missing_ratios > self.drop_threshold].index.tolist()
+        self.columns_to_drop = missing_ratios[
+            missing_ratios > self.drop_threshold
+        ].index.tolist()
 
         if self.columns_to_drop:
             logger.info(
@@ -130,7 +132,9 @@ class Winsorizer(BaseEstimator, TransformerMixin):
             )
 
         if self.bounds:
-            logger.info(f"   Fitted winsorizer for {len(self.bounds)} numerical columns")
+            logger.info(
+                f"   Fitted winsorizer for {len(self.bounds)} numerical columns"
+            )
 
         return self
 
@@ -149,7 +153,9 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
     Removes highly correlated features and low-importance features.
     """
 
-    def __init__(self, correlation_threshold: float = 0.95, importance_threshold: float = 0.01):
+    def __init__(
+        self, correlation_threshold: float = 0.95, importance_threshold: float = 0.01
+    ):
         """
         Initialize AdvancedFeatureSelector.
 
@@ -170,7 +176,9 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
         X_temp = pd.DataFrame(X) if not isinstance(X, pd.DataFrame) else X.copy()
         self.dropped_features = []
 
-        logger.info(f"   Starting feature selection with {len(X_temp.columns)} features")
+        logger.info(
+            f"   Starting feature selection with {len(X_temp.columns)} features"
+        )
 
         # Step 1: Drop highly correlated features
         numeric_cols = X_temp.select_dtypes(include=[np.number]).columns
@@ -201,8 +209,12 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
                     for feat1, feat2 in high_corr_pairs:
                         try:
                             y_clean = pd.Series(y).fillna(0)
-                            corr1 = abs(np.corrcoef(X_numeric[feat1].fillna(0), y_clean)[0, 1])
-                            corr2 = abs(np.corrcoef(X_numeric[feat2].fillna(0), y_clean)[0, 1])
+                            corr1 = abs(
+                                np.corrcoef(X_numeric[feat1].fillna(0), y_clean)[0, 1]
+                            )
+                            corr2 = abs(
+                                np.corrcoef(X_numeric[feat2].fillna(0), y_clean)[0, 1]
+                            )
 
                             # Drop the feature with lower target correlation
                             if corr1 > corr2:
@@ -214,24 +226,34 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
                             features_to_drop.add(feat2)
 
                     self.dropped_features.extend(list(features_to_drop))
-                    logger.info(f"   Dropped {len(features_to_drop)} highly correlated features")
+                    logger.info(
+                        f"   Dropped {len(features_to_drop)} highly correlated features"
+                    )
 
             except Exception as e:
                 logger.warning(f"   Correlation analysis failed: {str(e)[:50]}...")
 
         # Step 2: Feature importance based selection
-        X_after_corr = X_temp.drop(columns=list(set(self.dropped_features)), errors="ignore")
+        X_after_corr = X_temp.drop(
+            columns=list(set(self.dropped_features)), errors="ignore"
+        )
 
-        if y is not None and len(X_after_corr.columns) > 5:  # Only if we have enough features
+        if (
+            y is not None and len(X_after_corr.columns) > 5
+        ):  # Only if we have enough features
             try:
                 # Prepare data for XGBoost
                 X_for_importance = X_after_corr.copy()
 
                 # Handle categorical columns
-                categorical_cols = X_for_importance.select_dtypes(include=["object"]).columns
+                categorical_cols = X_for_importance.select_dtypes(
+                    include=["object"]
+                ).columns
                 for col in categorical_cols:
                     le = LabelEncoder()
-                    X_for_importance[col] = le.fit_transform(X_for_importance[col].astype(str))
+                    X_for_importance[col] = le.fit_transform(
+                        X_for_importance[col].astype(str)
+                    )
 
                 # Fill NaN values
                 X_for_importance = X_for_importance.fillna(0)
@@ -251,7 +273,9 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
                 ]
 
                 # Don't drop too many features - keep at least 5
-                features_remaining = len(X_after_corr.columns) - len(low_importance_features)
+                features_remaining = len(X_after_corr.columns) - len(
+                    low_importance_features
+                )
                 if features_remaining < 5:
                     # Keep top 5 most important features
                     importance_df = pd.DataFrame(
@@ -264,13 +288,17 @@ class AdvancedFeatureSelector(BaseEstimator, TransformerMixin):
                     ]
 
                 self.dropped_features.extend(low_importance_features)
-                logger.info(f"   Dropped {len(low_importance_features)} low importance features")
+                logger.info(
+                    f"   Dropped {len(low_importance_features)} low importance features"
+                )
 
             except Exception as e:
                 logger.warning(f"   Importance analysis failed: {str(e)[:50]}...")
 
         # Final selected features
-        self.selected_features = [col for col in X_temp.columns if col not in self.dropped_features]
+        self.selected_features = [
+            col for col in X_temp.columns if col not in self.dropped_features
+        ]
 
         # Ensure we have at least some features
         if len(self.selected_features) == 0:
@@ -331,8 +359,12 @@ class FlexibleColumnTransformer(BaseEstimator, TransformerMixin):
         """Fit transformers on available column types."""
         # Identify column types after preprocessing
         if hasattr(X, "columns"):
-            self.final_numerical_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-            self.final_categorical_cols = X.select_dtypes(include=["object"]).columns.tolist()
+            self.final_numerical_cols = X.select_dtypes(
+                include=[np.number]
+            ).columns.tolist()
+            self.final_categorical_cols = X.select_dtypes(
+                include=["object"]
+            ).columns.tolist()
         else:
             # If X is numpy array, assume all are numerical for now
             self.final_numerical_cols = list(range(X.shape[1]))
@@ -362,7 +394,9 @@ class FlexibleColumnTransformer(BaseEstimator, TransformerMixin):
 
             # Transform numerical columns
             if self.final_numerical_cols:
-                X_num_scaled = self.numerical_scaler.transform(X[self.final_numerical_cols])
+                X_num_scaled = self.numerical_scaler.transform(
+                    X[self.final_numerical_cols]
+                )
                 num_df = pd.DataFrame(
                     X_num_scaled,
                     columns=[f"num_{col}" for col in self.final_numerical_cols],
@@ -372,7 +406,9 @@ class FlexibleColumnTransformer(BaseEstimator, TransformerMixin):
 
             # Transform categorical columns
             if self.final_categorical_cols:
-                X_cat_encoded = self.categorical_encoder.transform(X[self.final_categorical_cols])
+                X_cat_encoded = self.categorical_encoder.transform(
+                    X[self.final_categorical_cols]
+                )
                 if hasattr(X_cat_encoded, "columns"):
                     cat_df = X_cat_encoded.copy()
                     cat_df.columns = [f"cat_{col}" for col in cat_df.columns]
@@ -436,9 +472,14 @@ class FeatureBuilder:
                 ("winsorizing", Winsorizer(limits=(0.05, 0.05))),
                 (
                     "feature_selection",
-                    AdvancedFeatureSelector(correlation_threshold=0.95, importance_threshold=0.01),
+                    AdvancedFeatureSelector(
+                        correlation_threshold=0.95, importance_threshold=0.01
+                    ),
                 ),
-                ("encoding_scaling", FlexibleColumnTransformer(random_state=self.random_state)),
+                (
+                    "encoding_scaling",
+                    FlexibleColumnTransformer(random_state=self.random_state),
+                ),
                 ("pca", PCA(n_components=0.90, random_state=self.random_state)),
                 ("final_feature_selection", SelectKBest(f_classif, k=30)),
             ]
@@ -488,11 +529,15 @@ class FeatureBuilder:
         logger.info("✅ Data split completed!")
         logger.info(f"   Training set: {X_train.shape[0]} samples")
         logger.info(f"   Test set: {X_test.shape[0]} samples")
-        logger.info(f"   Training target distribution: {y_train.value_counts().to_dict()}")
+        logger.info(
+            f"   Training target distribution: {y_train.value_counts().to_dict()}"
+        )
 
         return X_train, X_test, y_train, y_test
 
-    def fit_transform_features(self, X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFrame:
+    def fit_transform_features(
+        self, X_train: pd.DataFrame, y_train: pd.Series
+    ) -> pd.DataFrame:
         """
         Fit the preprocessing pipeline and transform training data.
 
@@ -514,20 +559,26 @@ class FeatureBuilder:
         logger.info("🔧 Fitting and transforming training features...")
 
         # Fit and transform training data
-        X_train_transformed = self.preprocessing_pipeline.fit_transform(X_train, y_train)
+        X_train_transformed = self.preprocessing_pipeline.fit_transform(
+            X_train, y_train
+        )
 
         # Store feature names if possible
         if hasattr(X_train_transformed, "columns"):
             self.feature_names = X_train_transformed.columns.tolist()
         else:
-            self.feature_names = [f"feature_{i}" for i in range(X_train_transformed.shape[1])]
+            self.feature_names = [
+                f"feature_{i}" for i in range(X_train_transformed.shape[1])
+            ]
 
         self.is_fitted = True
 
         logger.info("✅ Training features transformed!")
         logger.info(f"   Input shape: {X_train.shape}")
         logger.info(f"   Output shape: {X_train_transformed.shape}")
-        logger.info(f"   Features reduced by: {X_train.shape[1] - X_train_transformed.shape[1]}")
+        logger.info(
+            f"   Features reduced by: {X_train.shape[1] - X_train_transformed.shape[1]}"
+        )
 
         return X_train_transformed
 
@@ -615,9 +666,13 @@ class FeatureBuilder:
         # Get information from each step if available
         for step_name, transformer in self.preprocessing_pipeline.steps:
             if hasattr(transformer, "selected_features"):
-                info[f"{step_name}_selected_features"] = len(transformer.selected_features)
+                info[f"{step_name}_selected_features"] = len(
+                    transformer.selected_features
+                )
             if hasattr(transformer, "dropped_features"):
-                info[f"{step_name}_dropped_features"] = len(transformer.dropped_features)
+                info[f"{step_name}_dropped_features"] = len(
+                    transformer.dropped_features
+                )
 
         return info
 
@@ -642,7 +697,9 @@ def create_preprocessing_pipeline(random_state: int = 42) -> Pipeline:
             ("winsorizing", Winsorizer(limits=(0.05, 0.05))),
             (
                 "feature_selection",
-                AdvancedFeatureSelector(correlation_threshold=0.95, importance_threshold=0.01),
+                AdvancedFeatureSelector(
+                    correlation_threshold=0.95, importance_threshold=0.01
+                ),
             ),
             ("encoding_scaling", FlexibleColumnTransformer(random_state=random_state)),
             ("pca", PCA(n_components=0.90, random_state=random_state)),
@@ -664,7 +721,9 @@ def main():
         # This would normally load from the data module
         print("📂 Feature builder initialized")
         print("💡 To use with actual data:")
-        print("   1. Load data using: from src.data.make_dataset import DatasetProcessor")
+        print(
+            "   1. Load data using: from src.data.make_dataset import DatasetProcessor"
+        )
         print("   2. Process data: processor = DatasetProcessor()")
         print(
             "   3. Load dataset: data = processor.load_and_preprocess('multisim_dataset.parquet')"
@@ -682,7 +741,9 @@ def main():
     except Exception as e:
         logger.error(f"❌ Error in feature builder: {str(e)}")
         print("💡 Please ensure all required packages are installed:")
-        print("   pip install pandas numpy scikit-learn xgboost category-encoders scipy")
+        print(
+            "   pip install pandas numpy scikit-learn xgboost category-encoders scipy"
+        )
 
 
 if __name__ == "__main__":

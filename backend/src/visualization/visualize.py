@@ -28,7 +28,9 @@ class MultisimVisualizer:
     Provides both static (matplotlib/seaborn) and interactive (plotly) visualizations.
     """
 
-    def __init__(self, data_path: Optional[str] = None, model_path: Optional[str] = None):
+    def __init__(
+        self, data_path: Optional[str] = None, model_path: Optional[str] = None
+    ):
         """
         Initialize the visualizer.
 
@@ -123,7 +125,9 @@ class MultisimVisualizer:
 
         # Create subplot figure
         fig, axes = plt.subplots(2, 3, figsize=(20, 12))
-        fig.suptitle("Multisim Dataset Overview Dashboard", fontsize=16, fontweight="bold")
+        fig.suptitle(
+            "Multisim Dataset Overview Dashboard", fontsize=16, fontweight="bold"
+        )
 
         # 1. Target distribution
         if "target" in self.data.columns:
@@ -132,7 +136,11 @@ class MultisimVisualizer:
             colors = [self.colors["non_multisim"], self.colors["multisim"]]
 
             axes[0, 0].pie(
-                target_counts.values, labels=labels, autopct="%1.1f%%", colors=colors, startangle=90
+                target_counts.values,
+                labels=labels,
+                autopct="%1.1f%%",
+                colors=colors,
+                startangle=90,
             )
             axes[0, 0].set_title("Target Distribution")
 
@@ -150,19 +158,27 @@ class MultisimVisualizer:
                     axes[0, 1].set_xticklabels(["Non-Multisim", "Multisim"])
             except Exception as e:
                 print(e)
-                axes[0, 1].text(0.5, 0.5, "Age data unavailable", ha="center", va="center")
+                axes[0, 1].text(
+                    0.5, 0.5, "Age data unavailable", ha="center", va="center"
+                )
                 axes[0, 1].set_title("Age Distribution - No Data")
 
         # 3. Device age distribution
         if "age_dev" in self.data.columns:
             try:
-                age_dev_clean = pd.to_numeric(self.data["age_dev"], errors="coerce").dropna()
-                axes[0, 2].hist(age_dev_clean, bins=20, alpha=0.7, color=self.colors["primary"])
+                age_dev_clean = pd.to_numeric(
+                    self.data["age_dev"], errors="coerce"
+                ).dropna()
+                axes[0, 2].hist(
+                    age_dev_clean, bins=20, alpha=0.7, color=self.colors["primary"]
+                )
                 axes[0, 2].set_title("Device Age Distribution")
                 axes[0, 2].set_xlabel("Device Age (months)")
             except Exception as e:
                 print(e)
-                axes[0, 2].text(0.5, 0.5, "Device age data unavailable", ha="center", va="center")
+                axes[0, 2].text(
+                    0.5, 0.5, "Device age data unavailable", ha="center", va="center"
+                )
                 axes[0, 2].set_title("Device Age - No Data")
 
         # 4. Gender distribution
@@ -225,7 +241,13 @@ class MultisimVisualizer:
 
             # Convert object columns that might be numeric
             for col in self.data.select_dtypes(include=["object"]).columns:
-                if col not in ["gndr", "dev_man", "device_os_name", "simcard_type", "region"]:
+                if col not in [
+                    "gndr",
+                    "dev_man",
+                    "device_os_name",
+                    "simcard_type",
+                    "region",
+                ]:
                     temp_numeric = pd.to_numeric(self.data[col], errors="coerce")
                     if temp_numeric.notna().sum() > len(self.data) * 0.5:
                         numerical_data[col] = temp_numeric
@@ -263,7 +285,9 @@ class MultisimVisualizer:
             if len(numeric_cols) > 0:
                 fig, axes = plt.subplots(2, 3, figsize=(18, 12))
                 fig.suptitle(
-                    "Feature Distributions by Target Class", fontsize=16, fontweight="bold"
+                    "Feature Distributions by Target Class",
+                    fontsize=16,
+                    fontweight="bold",
                 )
                 axes = axes.ravel()
 
@@ -273,13 +297,19 @@ class MultisimVisualizer:
                             data_clean = self.data[[col, "target"]].dropna()
 
                             # Create violin plot
-                            sns.violinplot(data=data_clean, x="target", y=col, ax=axes[i])
+                            sns.violinplot(
+                                data=data_clean, x="target", y=col, ax=axes[i]
+                            )
                             axes[i].set_title(f"{col} by Target")
                             axes[i].set_xticklabels(["Non-Multisim", "Multisim"])
 
                         except Exception as e:
                             axes[i].text(
-                                0.5, 0.5, f"Error: {str(e)[:30]}...", ha="center", va="center"
+                                0.5,
+                                0.5,
+                                f"Error: {str(e)[:30]}...",
+                                ha="center",
+                                va="center",
                             )
                             axes[i].set_title(f"{col} - Error")
 
@@ -324,7 +354,10 @@ class MultisimVisualizer:
                     go.Pie(
                         labels=["Non-Multisim", "Multisim"],
                         values=target_counts.values,
-                        marker_colors=[self.colors["non_multisim"], self.colors["multisim"]],
+                        marker_colors=[
+                            self.colors["non_multisim"],
+                            self.colors["multisim"],
+                        ],
                     ),
                     row=1,
                     col=1,
@@ -358,10 +391,14 @@ class MultisimVisualizer:
 
             # 3. Device age histogram
             if "age_dev" in self.data.columns:
-                age_dev_clean = pd.to_numeric(self.data["age_dev"], errors="coerce").dropna()
+                age_dev_clean = pd.to_numeric(
+                    self.data["age_dev"], errors="coerce"
+                ).dropna()
                 fig.add_trace(
                     go.Histogram(
-                        x=age_dev_clean, name="Device Age", marker_color=self.colors["primary"]
+                        x=age_dev_clean,
+                        name="Device Age",
+                        marker_color=self.colors["primary"],
                     ),
                     row=2,
                     col=1,
@@ -507,10 +544,17 @@ class MultisimVisualizer:
                 f1_scores.append(0)
 
         axes[1, 1].plot(
-            thresholds, precision_scores, label="Precision", color=self.colors["primary"]
+            thresholds,
+            precision_scores,
+            label="Precision",
+            color=self.colors["primary"],
         )
-        axes[1, 1].plot(thresholds, recall_scores, label="Recall", color=self.colors["secondary"])
-        axes[1, 1].plot(thresholds, f1_scores, label="F1-Score", color=self.colors["success"])
+        axes[1, 1].plot(
+            thresholds, recall_scores, label="Recall", color=self.colors["secondary"]
+        )
+        axes[1, 1].plot(
+            thresholds, f1_scores, label="F1-Score", color=self.colors["success"]
+        )
         axes[1, 1].set_xlabel("Threshold")
         axes[1, 1].set_ylabel("Score")
         axes[1, 1].set_title("Metrics vs Threshold")
@@ -525,13 +569,17 @@ class MultisimVisualizer:
             top_n = min(15, len(importances))
             top_indices = np.argsort(importances)[-top_n:]
 
-            axes[1, 2].barh(range(top_n), importances[top_indices], color=self.colors["warning"])
+            axes[1, 2].barh(
+                range(top_n), importances[top_indices], color=self.colors["warning"]
+            )
             axes[1, 2].set_yticks(range(top_n))
             axes[1, 2].set_yticklabels([f"Feature_{i}" for i in top_indices])
             axes[1, 2].set_xlabel("Importance")
             axes[1, 2].set_title(f"Top {top_n} Feature Importances")
         else:
-            axes[1, 2].text(0.5, 0.5, "Feature importance\nnot available", ha="center", va="center")
+            axes[1, 2].text(
+                0.5, 0.5, "Feature importance\nnot available", ha="center", va="center"
+            )
             axes[1, 2].set_title("Feature Importance - N/A")
 
         plt.tight_layout()
@@ -679,7 +727,10 @@ class MultisimVisualizer:
             # Fill missing values
             numerical_data_filled = numerical_data.fillna(numerical_data.median())
 
-            if len(numerical_data_filled.columns) >= 2 and len(numerical_data_filled) > 50:
+            if (
+                len(numerical_data_filled.columns) >= 2
+                and len(numerical_data_filled) > 50
+            ):
                 # PCA visualization
                 pca = PCA(n_components=2, random_state=42)
                 pca_result = pca.fit_transform(numerical_data_filled)
@@ -690,12 +741,19 @@ class MultisimVisualizer:
                 plt.subplot(1, 2, 1)
                 if target is not None:
                     scatter = plt.scatter(
-                        pca_result[:, 0], pca_result[:, 1], c=target, cmap="RdYlBu", alpha=0.6
+                        pca_result[:, 0],
+                        pca_result[:, 1],
+                        c=target,
+                        cmap="RdYlBu",
+                        alpha=0.6,
                     )
                     plt.colorbar(scatter, label="Target (0: Non-Multisim, 1: Multisim)")
                 else:
                     plt.scatter(
-                        pca_result[:, 0], pca_result[:, 1], alpha=0.6, color=self.colors["primary"]
+                        pca_result[:, 0],
+                        pca_result[:, 1],
+                        alpha=0.6,
+                        color=self.colors["primary"],
                     )
 
                 plt.xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)")
@@ -712,11 +770,15 @@ class MultisimVisualizer:
                         perplexity=min(30, len(numerical_data_filled) - 1),
                     )
                     tsne_result = tsne.fit_transform(
-                        numerical_data_filled.sample(min(1000, len(numerical_data_filled)))
+                        numerical_data_filled.sample(
+                            min(1000, len(numerical_data_filled))
+                        )
                     )
 
                     if target is not None:
-                        target_sample = target.sample(min(1000, len(numerical_data_filled))).values
+                        target_sample = target.sample(
+                            min(1000, len(numerical_data_filled))
+                        ).values
                         scatter = plt.scatter(
                             tsne_result[:, 0],
                             tsne_result[:, 1],
@@ -724,7 +786,9 @@ class MultisimVisualizer:
                             cmap="RdYlBu",
                             alpha=0.6,
                         )
-                        plt.colorbar(scatter, label="Target (0: Non-Multisim, 1: Multisim)")
+                        plt.colorbar(
+                            scatter, label="Target (0: Non-Multisim, 1: Multisim)"
+                        )
                     else:
                         plt.scatter(
                             tsne_result[:, 0],
@@ -772,7 +836,9 @@ class MultisimVisualizer:
             # 1. Multisim adoption by age group
             if "age" in self.data.columns and "target" in self.data.columns:
                 age_clean = pd.to_numeric(self.data["age"], errors="coerce")
-                data_age = pd.DataFrame({"age": age_clean, "target": self.data["target"]}).dropna()
+                data_age = pd.DataFrame(
+                    {"age": age_clean, "target": self.data["target"]}
+                ).dropna()
 
                 if len(data_age) > 0:
                     # Create age groups
@@ -811,7 +877,9 @@ class MultisimVisualizer:
 
             # 2. Device type analysis
             device_cols = ["is_dualsim", "is_featurephone", "is_smartphone"]
-            available_device_cols = [col for col in device_cols if col in self.data.columns]
+            available_device_cols = [
+                col for col in device_cols if col in self.data.columns
+            ]
 
             if available_device_cols and "target" in self.data.columns:
                 device_adoption = {}
@@ -866,7 +934,9 @@ class MultisimVisualizer:
                         labels=["0-6m", "6m-1y", "1-2y", "2-3y", "3y+"],
                     )
 
-                    tenure_adoption = data_tenure.groupby("tenure_group")["target"].mean() * 100
+                    tenure_adoption = (
+                        data_tenure.groupby("tenure_group")["target"].mean() * 100
+                    )
 
                     axes[1, 0].plot(
                         tenure_adoption.index,
@@ -884,7 +954,9 @@ class MultisimVisualizer:
             # 5. Device manufacturer analysis
             if "dev_man" in self.data.columns and "target" in self.data.columns:
                 manufacturer_data = (
-                    self.data.groupby("dev_man")["target"].agg(["count", "mean"]).reset_index()
+                    self.data.groupby("dev_man")["target"]
+                    .agg(["count", "mean"])
+                    .reset_index()
                 )
                 manufacturer_data = manufacturer_data[
                     manufacturer_data["count"] >= 10
@@ -906,7 +978,9 @@ class MultisimVisualizer:
             # 6. Customer value segmentation
             if all(col in self.data.columns for col in ["tenure", "age", "target"]):
                 # Create a simple customer value score
-                tenure_clean = pd.to_numeric(self.data["tenure"], errors="coerce").fillna(0)
+                tenure_clean = pd.to_numeric(
+                    self.data["tenure"], errors="coerce"
+                ).fillna(0)
                 age_clean = pd.to_numeric(self.data["age"], errors="coerce").fillna(0)
 
                 # Normalize values
@@ -920,17 +994,25 @@ class MultisimVisualizer:
                 value_score = (tenure_norm + age_norm) / 2
 
                 # Create value segments
-                value_segments = pd.cut(value_score, bins=3, labels=["Low", "Medium", "High"])
+                value_segments = pd.cut(
+                    value_score, bins=3, labels=["Low", "Medium", "High"]
+                )
                 segment_data = pd.DataFrame(
                     {"segment": value_segments, "target": self.data["target"]}
                 )
 
-                segment_adoption = segment_data.groupby("segment")["target"].mean() * 100
+                segment_adoption = (
+                    segment_data.groupby("segment")["target"].mean() * 100
+                )
 
                 axes[1, 2].bar(
                     segment_adoption.index,
                     segment_adoption.values,
-                    color=[self.colors["warning"], self.colors["primary"], self.colors["success"]],
+                    color=[
+                        self.colors["warning"],
+                        self.colors["primary"],
+                        self.colors["success"],
+                    ],
                     alpha=0.7,
                 )
                 axes[1, 2].set_title("Multisim Adoption by Customer Value")
@@ -958,14 +1040,21 @@ class MultisimVisualizer:
             confidence_segments = pd.cut(
                 confidence_scores,
                 bins=[0, 0.6, 0.8, 0.9, 1.0],
-                labels=["Low (0-60%)", "Medium (60-80%)", "High (80-90%)", "Very High (90-100%)"],
+                labels=[
+                    "Low (0-60%)",
+                    "Medium (60-80%)",
+                    "High (80-90%)",
+                    "Very High (90-100%)",
+                ],
             )
 
             plt.figure(figsize=(15, 10))
 
             # 1. Confidence distribution
             plt.subplot(2, 3, 1)
-            plt.hist(confidence_scores, bins=30, alpha=0.7, color=self.colors["primary"])
+            plt.hist(
+                confidence_scores, bins=30, alpha=0.7, color=self.colors["primary"]
+            )
             plt.axvline(
                 confidence_scores.mean(),
                 color="red",
@@ -981,7 +1070,9 @@ class MultisimVisualizer:
             # 2. Confidence segments
             plt.subplot(2, 3, 2)
             segment_counts = confidence_segments.value_counts()
-            plt.pie(segment_counts.values, labels=segment_counts.index, autopct="%1.1f%%")
+            plt.pie(
+                segment_counts.values, labels=segment_counts.index, autopct="%1.1f%%"
+            )
             plt.title("Confidence Level Segments")
 
             # 3. Probability distribution for each class
@@ -1011,8 +1102,15 @@ class MultisimVisualizer:
 
             # 4. Confidence vs Prediction scatter
             plt.subplot(2, 3, 4)
-            multisim_probs = y_pred_proba[:, 1] if y_pred_proba.ndim > 1 else y_pred_proba
-            plt.scatter(multisim_probs, confidence_scores, alpha=0.6, color=self.colors["primary"])
+            multisim_probs = (
+                y_pred_proba[:, 1] if y_pred_proba.ndim > 1 else y_pred_proba
+            )
+            plt.scatter(
+                multisim_probs,
+                confidence_scores,
+                alpha=0.6,
+                color=self.colors["primary"],
+            )
             plt.xlabel("Multisim Probability")
             plt.ylabel("Confidence Score")
             plt.title("Confidence vs Multisim Probability")
@@ -1026,7 +1124,9 @@ class MultisimVisualizer:
                 confidence_scores[predictions == 1],
             ]
 
-            bp = plt.boxplot(conf_by_pred, labels=["Non-Multisim", "Multisim"], patch_artist=True)
+            bp = plt.boxplot(
+                conf_by_pred, labels=["Non-Multisim", "Multisim"], patch_artist=True
+            )
             bp["boxes"][0].set_facecolor(self.colors["non_multisim"])
             bp["boxes"][1].set_facecolor(self.colors["multisim"])
             plt.ylabel("Confidence Score")
@@ -1051,7 +1151,9 @@ class MultisimVisualizer:
 
                 # Add percentage labels
                 total_high_conf = len(high_conf_preds)
-                for i, count in enumerate([high_conf_counts.get(0, 0), high_conf_counts.get(1, 0)]):
+                for i, count in enumerate(
+                    [high_conf_counts.get(0, 0), high_conf_counts.get(1, 0)]
+                ):
                     if total_high_conf > 0:
                         pct = (count / total_high_conf) * 100
                         plt.text(
@@ -1062,7 +1164,13 @@ class MultisimVisualizer:
                             va="bottom",
                         )
             else:
-                plt.text(0.5, 0.5, "No high confidence\npredictions", ha="center", va="center")
+                plt.text(
+                    0.5,
+                    0.5,
+                    "No high confidence\npredictions",
+                    ha="center",
+                    va="center",
+                )
                 plt.title("High Confidence Predictions - None")
 
             plt.tight_layout()
@@ -1073,7 +1181,9 @@ class MultisimVisualizer:
 
         print("✅ Prediction confidence analysis created!")
 
-    def save_visualization_report(self, output_dir: str = "visualization_reports") -> bool:
+    def save_visualization_report(
+        self, output_dir: str = "visualization_reports"
+    ) -> bool:
         """
         Save all visualizations and analysis to files.
 
@@ -1112,7 +1222,9 @@ class MultisimVisualizer:
                 }
 
             # Save report
-            report_path = os.path.join(output_dir, f"visualization_report_{timestamp}.json")
+            report_path = os.path.join(
+                output_dir, f"visualization_report_{timestamp}.json"
+            )
             with open(report_path, "w") as f:
                 json.dump(report, f, indent=2)
 
@@ -1166,7 +1278,11 @@ class MultisimVisualizer:
         if self.model is not None:
             try:
                 # Make predictions for visualization
-                X = self.data.drop("target", axis=1) if "target" in self.data.columns else self.data
+                X = (
+                    self.data.drop("target", axis=1)
+                    if "target" in self.data.columns
+                    else self.data
+                )
                 y_true = self.data["target"] if "target" in self.data.columns else None
 
                 # Preprocess data (basic preprocessing)
@@ -1181,7 +1297,9 @@ class MultisimVisualizer:
 
                 if y_true is not None:
                     self.visualize_model_performance(y_true, y_pred, y_pred_proba[:, 1])
-                    self.create_interactive_model_analysis(y_true, y_pred, y_pred_proba[:, 1])
+                    self.create_interactive_model_analysis(
+                        y_true, y_pred, y_pred_proba[:, 1]
+                    )
 
                 self.create_prediction_confidence_analysis(y_pred_proba)
 
@@ -1207,12 +1325,20 @@ class MultisimVisualizer:
         X_processed = X.copy()
 
         # Convert specified columns to int type
-        int_columns = ["age_dev", "dev_num", "is_dualsim", "is_featurephone", "is_smartphone"]
+        int_columns = [
+            "age_dev",
+            "dev_num",
+            "is_dualsim",
+            "is_featurephone",
+            "is_smartphone",
+        ]
         for col in int_columns:
             if col in X_processed.columns:
                 try:
                     X_processed[col] = (
-                        pd.to_numeric(X_processed[col], errors="coerce").fillna(0).astype(int)
+                        pd.to_numeric(X_processed[col], errors="coerce")
+                        .fillna(0)
+                        .astype(int)
                     )
                 except Exception as e:
                     print(e)
@@ -1221,7 +1347,9 @@ class MultisimVisualizer:
         if "age" in X_processed.columns:
             try:
                 if X_processed["age"].dtype == "object":
-                    X_processed["age"] = pd.to_numeric(X_processed["age"], errors="coerce")
+                    X_processed["age"] = pd.to_numeric(
+                        X_processed["age"], errors="coerce"
+                    )
             except Exception as e:
                 print(e)
 
@@ -1242,14 +1370,18 @@ class MultisimVisualizer:
         cols_to_drop.extend(val_cols)
 
         temp_cols = [
-            col for col in X_processed.columns if col.startswith(("temp_", "tmp_", "test_"))
+            col
+            for col in X_processed.columns
+            if col.startswith(("temp_", "tmp_", "test_"))
         ]
         cols_to_drop.extend(temp_cols)
 
         if "telephone_number" in X_processed.columns:
             cols_to_drop.append("telephone_number")
 
-        existing_cols_to_drop = [col for col in cols_to_drop if col in X_processed.columns]
+        existing_cols_to_drop = [
+            col for col in cols_to_drop if col in X_processed.columns
+        ]
         if existing_cols_to_drop:
             X_processed = X_processed.drop(existing_cols_to_drop, axis=1)
 
@@ -1318,7 +1450,12 @@ def main():
     visualizer = MultisimVisualizer()
 
     # Check for data file
-    data_files = ["multisim_dataset.parquet", "multisim_dataset.csv", "data.parquet", "data.csv"]
+    data_files = [
+        "multisim_dataset.parquet",
+        "multisim_dataset.csv",
+        "data.parquet",
+        "data.csv",
+    ]
     data_found = False
 
     for data_file in data_files:
@@ -1375,7 +1512,11 @@ def main():
                 if "target" in visualizer.data.columns
                 else visualizer.data
             )
-            y_true = visualizer.data["target"] if "target" in visualizer.data.columns else None
+            y_true = (
+                visualizer.data["target"]
+                if "target" in visualizer.data.columns
+                else None
+            )
 
             if y_true is not None:
                 try:
@@ -1385,8 +1526,12 @@ def main():
                     y_pred_proba = visualizer.model.predict_proba(X_processed)
 
                     # Create model visualizations
-                    visualizer.visualize_model_performance(y_true, y_pred, y_pred_proba[:, 1])
-                    visualizer.create_interactive_model_analysis(y_true, y_pred, y_pred_proba[:, 1])
+                    visualizer.visualize_model_performance(
+                        y_true, y_pred, y_pred_proba[:, 1]
+                    )
+                    visualizer.create_interactive_model_analysis(
+                        y_true, y_pred, y_pred_proba[:, 1]
+                    )
                     visualizer.create_prediction_confidence_analysis(y_pred_proba)
 
                 except Exception as e:
