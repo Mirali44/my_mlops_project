@@ -1,0 +1,41 @@
+version: "3.8"
+      
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    networks:
+      - safe_networks
+    restart: always
+    image: backend
+    container_name: backend
+    volumes:
+      - ./backend:/app
+      - backend_venv:/app/.venv
+    ports:
+      - "8000:8000"
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    networks:
+      - safe_networks
+    restart: always
+    image: frontend
+    container_name: frontend
+    volumes:
+      - ./frontend:/app
+      - frontend_venv:/app/.venv
+    ports:
+      - "8501:8501"
+
+
+volumes:
+  backend_venv:
+  frontend_venv:
+
+networks:
+  safe_networks:
+    driver: bridge
