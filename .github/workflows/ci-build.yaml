@@ -1,27 +1,68 @@
-name: CI Build
+name: CI/CD
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
+  ci:
+    name: Lint (Ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # Install uv and set Python (pin or read from your repo)
-      - name: Setup uv (+ Python 3.13)
+      # Install uv and Python 3.12
+      - name: Setup uv (+ Python 3.12)
         uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.13"
+          python-version: "3.12"
           enable-cache: true
 
-      # Lint with Ruff via uvx; show GitHub annotations on PRs
       - name: Ruff check
         run: uvx ruff check --output-format=github .
 
-    
+  deploy:
+    name: Deploy (Docker Compose on self-hosted)
+    # Deploy only on pushes to main, never on PRs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci]
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show runner info (sanity check)
+        run: |
+          uname -a || true
+          docker --version || true
+          (docker compose version || docker-compose --version) || true
+
+      - name: Build & (re)start stack via Docker Compose
+        env:
+          DOCKER_BUILDKIT: "0"
+          COMPOSE_DOCKER_CLI_BUILD: "1"
+        run: |
+          set -e
+          
+          # Stop old containers, remove orphans (keeps named volumes)
+          docker-compose -f docker-compose.yml down --remove-orphans
+
+          # Rebuild and start in the background
+          docker-compose -f docker-compose.yml up -d --build
+
+          # Show status
+          docker-compose -f docker-compose.yml ps
+
+      # Optional: clean up dangling images to save disk space on the runner
+      - name: Prune dangling images (optional)
+        run: |
+          docker image prune -f || true
