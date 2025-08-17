@@ -498,7 +498,7 @@ with st.sidebar:
     st.markdown("### 🔗 API Configuration")
     api_endpoint = st.text_input(
         "",
-        value="http://localhost:8000",
+        value="http://52.3.105.20:8000",
         placeholder="Enter FastAPI Backend URL",
         help="🚀 URL of your FastAPI backend server",
         key="api_input",
