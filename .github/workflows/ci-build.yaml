@@ -30,7 +30,7 @@ jobs:
 
   deploy:
     name: Deploy (Docker Compose on self-hosted)
-    # Deploy only on pushes to master
+    # Deploy only on pushes to master!
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [ci]
     runs-on: self-hosted
